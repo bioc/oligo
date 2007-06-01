@@ -196,12 +196,12 @@ setMethod("image", signature(x="FeatureSet"),
     m=matrix(NA,ncol=length(unique(xs)),nrow=length(levels)-1)
     xIndexes=split(seq(along=xs),xs)
     yIndexes=sapply(xIndexes,function(i) as.numeric(cut(ys[i],breaks=levels,include.lowest=TRUE)))
-    if (is.function(transfo)) m <- transfo(m)
     ## end... now make plots
     for (i in 1:length(sampleNames(x))) {
       for(j in seq(along=xIndexes)){
         m[yIndexes[[j]],j]=exprs(x)[xIndexes[[j]],i]
       }
+      if (is.function(transfo)) m <- transfo(m)
       image(m,xlab=xlab,ylab=ylab,col=col, main=sampleNames(x)[i], ...)
     }
   }else{
