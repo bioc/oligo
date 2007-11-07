@@ -49,7 +49,7 @@ read.celfiles <- function(filenames,
   pdInfo <- get(pkgname)
   if (is(pdInfo, "platformDesign")) {
     order_index <- pdInfo$order_index
-    tmpExprs <- tmpExprs[order_index, ]
+    tmpExprs <- tmpExprs[order_index,, drop=FALSE]
   }
 
   rownames(tmpExprs) <- 1:nrow(tmpExprs)
