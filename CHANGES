@@ -75,3 +75,7 @@ modifed read.celfiles to appear more like read.affybatch, should present a notic
 04-16-2009: B Carvalho
 
 ** Removed some unused code
+
+08-24-2009: B Carvalho
+
+** Fixed image() for Affymetrix arrays
