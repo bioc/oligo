@@ -79,3 +79,8 @@ modifed read.celfiles to appear more like read.affybatch, should present a notic
 08-24-2009: B Carvalho
 
 ** Fixed image() for Affymetrix arrays
+
+08-18-2009: B Carvalho
+
+** Fixed and improved behavior of boxplot() for ExpressionSet and FeatureSet objects
+
