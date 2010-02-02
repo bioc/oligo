@@ -33,7 +33,7 @@ importMethodsFrom(Biobase, annotatedDataFrameFrom, annotation,
                   "featureData<-", featureNames, "featureNames<-",
                   "notes<-", pData, phenoData, "phenoData<-", preproc,
                   "preproc<-", rowMedians, sampleNames,
-                  "sampleNames<-", varMetadata)
+                  "sampleNames<-", varMetadata, combine)
 importFrom(Biobase, assayDataElement, assayDataElementReplace)
 
 ## Needed from affyio

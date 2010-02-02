@@ -5,6 +5,7 @@
 **  
 **  I) HISTORY
 **
+**  Dec   02, 2009 - Fixed memory leak (forgotten Free(d0))
 **  July  30, 2009 - Removed 'dimnamesout' from
 **                   the variable definition in
 **                   R_read_xys_files
@@ -240,6 +241,7 @@ SEXP R_read_xys_files(SEXP filenames, SEXP verbosity){
 	      CHAR(STRING_ELT(filenames, 0)),
 	      CHAR(STRING_ELT(filenames, i)));
       }
+      Free(d1); // Missed: 12/02/09
     }
   Free(d0);
   if (verbose) Rprintf("Done.\n");
@@ -259,8 +261,8 @@ SEXP R_read_xys_files(SEXP filenames, SEXP verbosity){
 		 ptr2xy, i, nrows, verbose);
     d0 = xys_header_field(CHAR(STRING_ELT(filenames, i)), "date=");
     SET_STRING_ELT(dates, i, mkChar(d0));
+    Free(d0);
   }
-  Free(d0);
 
   PROTECT(output = allocVector(VECSXP, 3));
   SET_VECTOR_ELT(output, 0, xy);
@@ -331,7 +333,7 @@ SEXP R_read_xys_header(SEXP filename){
   }
   setAttrib(output, R_NamesSymbol, namesout);
 
-  UNPROTECT(2);
   untokenizer(header);
+  UNPROTECT(2);
   return(output);
 }
