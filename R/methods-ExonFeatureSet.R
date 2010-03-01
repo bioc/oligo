@@ -1,3 +1,9 @@
+setMethod("probeNames", "ExonFeatureSet",
+          function(object, subset=NULL){
+            res <- dbGetQuery(db(object), "SELECT fsetid FROM pmfeature")[[1]]
+            as.character(res)
+          })
+
 setMethod("rma", "ExonFeatureSet",
           function(object, background=TRUE, normalize=TRUE, subset=NULL, target="core"){
             if (target == "core"){
