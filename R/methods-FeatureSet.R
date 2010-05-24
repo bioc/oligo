@@ -1,3 +1,144 @@
+## testing
+setGeneric("intensity",
+           function(object)
+           standardGeneric("intensity"))
+
+setMethod("intensity", "FeatureSet",
+          function(object)
+              exprs(object))
+
+setGeneric("probesetNames",
+           function(object)
+           standardGeneric("probesetNames"))
+
+setMethod("probesetNames", "FeatureSet",
+          function(object)
+          unique(probeNames(object))
+          )
+          
+
+## fitPLM <- function(object, model=PM ~ -1 + probes + samples,
+##                    variable.type=c(default="factor"),
+##                    constraint.type=c(default="contr.treatment"),
+##                    subset=NULL, background=TRUE, normalize=TRUE,
+##                    background.method="RMA.2",normalize.method="quantile",
+##                    background.param=list(), normalize.param=list(),
+##                    output.param=affyPLM:::verify.output.param(),
+##                    model.param=affyPLM:::verify.model.param(object,model), verbosity.level=0){
+## 
+## 
+##   if (!is(object, "FeatureSet")) {
+##     stop(paste("argument is", class(object), "fitPLM requires FeatureSet"))
+##   }
+## 
+## 
+##   b.param <- background.param
+##   n.param <- normalize.param
+## 
+##   
+##   variable.type <- affyPLM:::verify.variable.types(model, variable.type)
+##   constraint.type <- affyPLM:::verify.constraint.types(model, constraint.type)
+## 
+##   output <- affyPLM:::verify.output.param(output.param)
+##   modelparam <- affyPLM:::verify.model.param(object, model, model.param=model.param)
+##   R.model <- affyPLM:::PLM.designmatrix3(object, model, variable.type=variable.type, constraint.type=constraint.type)
+## 
+## 
+## 
+##   background.param <- affyPLM:::verify.bg.param(R.model, background.method, background.param = background.param)
+##   normalize.param <- affyPLM:::verify.norm.param(R.model, normalize.method, normalize.param=normalize.param)
+##    
+##   if (!is.null(subset)){
+##     n.probesets <- length(subset)
+##   } else {
+##     n.probesets <- length(probesetNames(object))
+##   }
+## 
+##   ## to avoid having to pass location information to the c code, we will just call the R code method
+##   if (is.element(background.method, c("MAS", "MASIM")) & background){
+##     object <- backgroundCorrect(object, method="mas",
+##                                 verbose=verbosity.level > 0)
+##   }
+##   if (is.element(background.method, c("gcrma", "GCRMA")) & background){
+##       stop("background correction via gcrma not yet implemented.")
+##   }
+##   pms <- pm(object, subset)
+##   mms <- mm(object, subset)
+##   pns <- probeNames(object, subset)
+##   i <- order(pns)
+##   pms <- pms[i,, drop=FALSE]
+##   mms <- mms[i,, drop=FALSE]
+##   pns <- pns[i]
+##   rm(i)
+## 
+##   Fitresults <- .Call("R_rlm_PLMset_c",
+##                       pms, mms, pns, length(unique(pns)),
+##                       R.model,
+##                       output,
+##                       modelparam,
+##                       background,
+##                       background.method,
+##                       background.param,
+##                       normalize,
+##                       normalize.method,
+##                       normalize.param,
+##                       verbosity.level,
+##                       PACKAGE="affyPLM")
+##   
+##   new("PLMset",
+##       chip.coefs=Fitresults[[1]],
+##       probe.coefs= Fitresults[[2]],
+##       weights=Fitresults[[3]],
+##       se.chip.coefs=Fitresults[[4]],
+##       se.probe.coefs=Fitresults[[5]],
+##       const.coefs=Fitresults[[6]],
+##       se.const.coefs=Fitresults[[7]],
+##       residuals=Fitresults[[8]],
+##       residualSE=Fitresults[[9]],
+##       varcov = Fitresults[[10]],
+##       cdfName = annotation(object),
+##       phenoData = phenoData(object),
+##       annotation = annotation(object),
+##       experimentData = experimentData(object),
+##       ##FIXME: remove # after notes is fixed.
+##       ##notes = object@notes,
+##       nrow= geometry(object)[1],
+##       ncol= geometry(object)[2],
+##       narrays=ncol(object),
+##       model.description = list(which.function="fitPLM",
+##         preprocessing=list(bg.method=background.method,bg.param=background.param,
+##           background=background,norm.method=normalize.method,
+##           norm.param=normalize.param,normalize=normalize),
+##         modelsettings =list(constraint.type=constraint.type,
+##           variable.type=variable.type,model.param=modelparam),
+##         outputsettings=output, R.model=R.model))
+## 
+## }
+## 
+##
+
+setMethod("backgroundCorrect", "FeatureSet",
+          function(object, method="rma", copy=TRUE, verbose=TRUE, ...){
+              method <- match.arg(method, c("rma", "mas"))
+              if (verbose) message("Background correcting... ",
+                                   appendLF=FALSE)
+              if (method == "rma"){
+                  pm(object) <- backgroundCorrect(pm(object), method="rma",
+                                                  copy=TRUE, verbose=FALSE)
+              }else if (method == "mas"){
+                  stop("Don't know what to do with ", class(object),
+                       " for MAS background correction")
+              }
+              object
+          })
+
+## should geometry go to oligoClasses?
+## or the opposite?
+setMethod("geometry", "FeatureSet",
+          function(object)
+          geometry(getPD(object))
+          )
+
 setMethod("bg", "FeatureSet",
           function(object, subset=NULL){
             bgi <- bgindex(object, subset=subset)
@@ -65,8 +206,14 @@ setMethod("boxplot", signature(x="FeatureSet"),
             if (is.null(dots[["range"]])) dots[["range"]] <- 0
             if (is.null(dots[["main"]])) changeMain <- TRUE
             if (is.null(dots[["col"]])) dots[["col"]] <- darkColors(ncol(x))
-                
+            
             eset <- x[idx,]
+
+            ## this fix is temporary
+            ## until we agree on how
+            ## to handle multiplicity by gene chips
+            featureNames(eset) <- featureNames(featureData(eset))
+            
             rgs <- vector("list", nchns)
             for (i in 1:nchns){
                 tmp <- log2(exprs(channel(eset, chns[i])))
@@ -124,7 +271,8 @@ setMethod("image", signature(x="FeatureSet"),
             
             chns <- channelNames(x)
             nchns <- length(chns)
-            par(mfrow=c(1, nchns))
+            oldpar <- par()[c("mfrow", "mar", "mgp")]
+            par(mfrow=c(nchns, 1), mar=c(2.5,2.5,1.6,1.1), mgp=c(1.5,.5,0))
             
             if (tolower(manufacturer(x)) != "affymetrix"){
               conn <- db(x)
@@ -141,6 +289,7 @@ setMethod("image", signature(x="FeatureSet"),
                   tmp <- matrix(NA, nr=geom[1], nc=geom[2])
                   tmp[idx] <- transfo(as.numeric(exprs(channel(tmpObj, chns[j]))))
                   tmp <- as.matrix(rev(as.data.frame(tmp)))
+                  dots[["x"]] <- tmp
                   do.call("image", dots)
                   rm(tmp)
                 }
@@ -155,6 +304,7 @@ setMethod("image", signature(x="FeatureSet"),
                     tmp <- transfo(as.numeric(exprs(channel(tmpObj, chns[j]))))
                     tmp <- matrix(tmp, ncol=geom[1], nrow=geom[2])
                     tmp <- as.matrix(rev(as.data.frame(tmp)))
+                    dots[["x"]] <- tmp
                     do.call("image", dots)
                     rm(tmp)
                   }
@@ -162,6 +312,7 @@ setMethod("image", signature(x="FeatureSet"),
               }
             }
             par(ask=FALSE)
+            par(oldpar)
           })
 
 
@@ -203,7 +354,15 @@ setMethod("hist", "FeatureSet",
             ## estimate density for every sample on each channel
             f <- function(chn, obj)
               matDensity(transfo(exprs(channel(obj, chn))))
-            tmp <- lapply(chns, f, x[idx,])
+
+            eset <- x[idx,]
+            ## this fix is temporary
+            ## until we agree on how
+            ## to handle multiplicity by gene chips
+            featureNames(eset) <- featureNames(featureData(eset))
+
+            tmp <- lapply(chns, f, eset)
+            rm(eset)
             
             ## get lims
             rgs <- lapply(tmp, sapply, range)
@@ -279,6 +438,7 @@ setMethod("MAplot", "FeatureSet",
               dots[["pch"]] <- "."
             
             small <- object[idx,]
+            featureNames(small) <- featureNames(featureData(small))
             
             if (nchns == 1){
               ref <- rowMedians(log2(exprs(small)))
