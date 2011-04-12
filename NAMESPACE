@@ -32,10 +32,12 @@ importMethodsFrom(oligoClasses, allele, bothStrands, calls, db,
 importFrom(affxparser, createCel, readCelHeader, readCelIntensities,
            updateCel)
 
-importFrom(affyio, read.celfile.header)
+importFrom(affyio, read.celfile.header, read.celfile)
 
 importFrom(Biobase, assayDataElement, assayDataElementReplace,
            assayDataNew)
+
+importFrom(ff, ff, ffvecapply, clone, filename, is.ff, 'finalizer<-', vmode)
 
 importFrom(graphics, boxplot, hist, image, lines, matplot, par, plot)
 

@@ -402,3 +402,13 @@ plotM <- function(x, snp, ...){
   plot(correctedM, ...)
   invisible(correctedM)
 }
+
+readCEL <- function(cels, fid){
+    g <- function(x) read.celfile(x, TRUE)[['INTENSITY']][['MEAN']]
+    if (missing(fid)){
+        sapply(cels, g)
+    }else{
+        sapply(cels, function(x) g(x)[fid])
+    }
+}
+
