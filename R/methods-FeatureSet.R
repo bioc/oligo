@@ -311,7 +311,7 @@ setMethod("MAplot", "FeatureSet",
               stopifnot(is.function(what))
               maplot(x=what(object), transfo=transfo, groups=groups,
                      refSamples=refSamples, which=which, pch=pch,
-                     summaryFun=summaryFun, main=main, pairs=pairs, ...)
+                     summaryFun=summaryFun, plotFun=plotFun, main=main, pairs=pairs, ...)
           })
 
 setMethod("getX", "FeatureSet",

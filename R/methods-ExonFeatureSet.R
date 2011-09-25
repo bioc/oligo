@@ -114,12 +114,29 @@ getRefDABG <- function(x){
 }
 
 computePSDABG <- function(x){
-    paProbe <- -log(paCalls(x, method="DABG", verbose=FALSE))
+    tmp <- paCalls(x, method="DABG", verbose=FALSE)
+    n <- ncol(tmp)+1L
     pns <- probeNames(x)
-    n <- ncol(paProbe)+1
-    theSum <- 2*rowsum(cbind(paProbe, 1), pns, reorder=FALSE)
-    res <- pchisq(theSum[, -n, drop=FALSE], theSum[,n], lower.tail=FALSE)
-    colnames(res) <- sampleNames(x)
+    if ('matrix' %in% class(tmp)){
+        theSum <- 2*rowsum(cbind(-log(tmp), 1), pns, reorder=FALSE)
+        res <- pchisq(theSum[, -n, drop=FALSE], theSum[,n], lower.tail=FALSE)
+        colnames(res) <- sampleNames(x)
+    }else{
+        ups <- unique(pns)
+        idx <- match(ups, sort(ups))
+        open(tmp)
+        res <- createFF("oligo-psdabg-", c(length(ups), ncol(tmp)))
+        DF <- 2*tapply(rep(1, nrow(tmp)), pns, sum)[idx]
+        for (i in 1:ncol(tmp)){
+            res[,i] <- pchisq(2*tapply(-log(tmp[,i]), pns, sum)[idx],
+                              DF, lower.tail=FALSE)
+        }
+        close(tmp)
+        finalizer(tmp) <- 'delete'
+        dimnames(res) <- list(ups, sampleNames(x))
+        rm(tmp, DF, ups, idx)
+        close(res)
+    }
     return(res)
 }
 
