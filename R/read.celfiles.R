@@ -98,8 +98,11 @@ read.celfiles <- function( ..., filenames, pkgname, phenoData,
   
   out <- new(theClass)
   slot(out, "assayData") <- assayDataNew(exprs=tmpExprs)
-  if (missing(phenoData))
+  if (missing(phenoData)){
       phenoData <- basicPhData1(tmpExprs)
+  }else{
+      sampleNames(out) <- sampleNames(phenoData)
+  }
   slot(out, "phenoData") <- phenoData
   rm(phenoData)
   if (missing(featureData))
@@ -166,9 +169,12 @@ read.celfiles2 <- function(channel1, channel2, pkgname, phenoData,
   out <- new(theClass)
   slot(out, "assayData") <- assayDataNew(channel1=channel1Intensities,
                                          channel2=channel2Intensities)
-  if (missing(phenoData))
+  if (missing(phenoData)){
       phenoData <- basicPhData2(channel1Intensities,
                                 channel2Intensities)
+  }else{
+      sampleNames(out) <- sampleNames(phenoData)
+  }
   slot(out, "phenoData") <- phenoData
   rm(phenoData)
   if (missing(featureData))
